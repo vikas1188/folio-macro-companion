@@ -1,3 +1,12 @@
 export const holdings=[{ticker:'SPY',name:'S&P 500 ETF',color:'#738bc6',weight:40},{ticker:'TLT',name:'Long-term Treasury ETF',color:'#a7b4bf',weight:20},{ticker:'GLD',name:'Gold ETF',color:'#c3ab74',weight:15},{ticker:'SLV',name:'Silver ETF',color:'#bfc4ca',weight:10},{ticker:'USO',name:'Oil futures ETF',color:'#9caba0',weight:10},{ticker:'CASH',name:'Cash · USD',color:'#d5d8cf',weight:5}];
 export const scenarios={higher:{label:'Higher for longer',description:'Assume persistent inflation and a more restrictive policy outlook. Explore the effect on this mix of holdings.',returns:[-3,-5,-2,-4,1,0]},easing:{label:'Gentle easing',description:'Assume inflation cools while growth holds up. A supportive backdrop can have different effects across holdings.',returns:[3,4,2,3,1,0]},shock:{label:'Growth shock',description:'Assume a sharp slowdown and a flight to perceived safety. Equity and energy weakness offset strength elsewhere.',returns:[-7,5,4,-3,-9,0]}};
 export function calculate(value,weights,scenario,shift=0){if(!Number.isFinite(value)||value<100||value>1e9)throw new Error('Enter a portfolio value between $100 and $1 billion.');if(weights.length!==holdings.length||weights.some(w=>!Number.isFinite(w)||w<0||w>100))throw new Error('Each allocation must be between 0% and 100%.');if(Math.abs(weights.reduce((a,b)=>a+b,0)-100)>.001)throw new Error('Allocations must add up to 100% to calculate impact.');if(!scenarios[scenario])throw new Error('Unknown scenario.');if(!Number.isFinite(shift)||shift<0||shift>weights[0])throw new Error('The cash shift cannot exceed your SPY allocation.');const returns=scenarios[scenario].returns;const contributions=weights.map((w,i)=>value*w/100*returns[i]/100);const pnl=contributions.reduce((a,b)=>a+b,0);const after=pnl-value*shift/100*returns[0]/100;return{pnl,after,percent:pnl/value*100,contributions,difference:after-pnl};}
+
+export const policyReturns={cut:[2,3,2,2,1,0],hold:[-.5,-1,-.5,-1,-.5,0],hike:[-3,-5,-2,-4,-2,0]};
+export function policyIllustration(value,weights,probabilities){
+  calculate(value,weights,'higher');
+  const keys=Object.keys(policyReturns);
+  if(keys.some(k=>!Number.isFinite(probabilities[k])||probabilities[k]<0||probabilities[k]>1)||Math.abs(keys.reduce((s,k)=>s+probabilities[k],0)-1)>.00001)throw new Error('Invalid event probabilities');
+  const outcomes=Object.fromEntries(keys.map(k=>[k,weights.reduce((s,w,i)=>s+value*w/100*policyReturns[k][i]/100,0)]));
+  return{outcomes,weighted:keys.reduce((s,k)=>s+outcomes[k]*probabilities[k],0)};
+}
