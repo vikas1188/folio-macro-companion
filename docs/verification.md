@@ -14,3 +14,7 @@
 - Real Jev smoke returned HTTP 200, model `jev-1.13.0`, status `ready`, 12 routed evidence items and a normalized cut/hold/hike distribution. This is integration verification, not calibration evidence.
 - Initial source extraction captured header-only text; Jev correctly withheld the estimate. Fixed extraction to read article paragraphs beyond nested headers and added a regression test. No confidence threshold was relaxed.
 - Production Worker export, route responses and absence of the local key from bundled assets are checked before publishing.
+
+## Hosted-data correction
+
+The first Worker deployment verified Jev secret presence, but FRED CSV downloads failed from the hosting network. The UI now distinguishes nine live source checks from four retained FRED observations, includes their actual retrieval timestamps, and expires retained copies after 72 hours. A 15th regression test covers snapshot provenance, expiration and rejection of future retrieval timestamps. The optional FRED API key enables authenticated refresh without changing the client.

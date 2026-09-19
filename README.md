@@ -6,7 +6,7 @@ A scroll-driven portfolio companion for US retail investors. One procedural sphe
 
 Node.js 22.13+ is required. Run `npm ci`, copy `.env.example` to `.env.local`, set `TYPESAFE_API_KEY`, then `npm run dev`. The server prints its URL and tries subsequent ports if 4173 is occupied. Secrets are never served to the browser. The optional `FRED_API_KEY` uses FRED's API; otherwise separate public CSV requests are used.
 
-`npm test` runs 14 tests. `npm run check` checks syntax. `npm run build` emits a Cloudflare-compatible Worker in `dist/server/index.js`, including the frontend assets and Sites metadata.
+`npm test` runs 15 tests. `npm run check` checks syntax. `npm run build` emits a Cloudflare-compatible Worker in `dist/server/index.js`, including the frontend assets and Sites metadata.
 
 ## Demo
 
@@ -25,7 +25,7 @@ Node.js 22.13+ is required. Run `npm ci`, copy `.env.example` to `.env.local`, s
 
 ## Sources and model
 
-Federal Reserve monetary-policy RSS and speeches; EIA Today in Energy; FRED DFF, DGS10, T10YIE, CPIAUCSL; Yahoo chart data for SPY, TLT, GLD, SLV and USO. FOMC dates are parsed from the official calendar. Source outages remain explicit. Jev uses the documented `/v1/systemone` API and `jev-latest`; local verification resolved to `jev-1.13.0`.
+Federal Reserve monetary-policy RSS and speeches; EIA Today in Energy; FRED DFF, DGS10, T10YIE, CPIAUCSL; Yahoo chart data for SPY, TLT, GLD, SLV and USO. FOMC dates are parsed from the official calendar. Source outages remain explicit. The hosting network could not retrieve FRED CSVs during production verification; a timestamped snapshot of four locally retrieved FRED observations is used for at most 72 hours and labeled in the interface. A configured FRED API key uses the official API instead. Jev uses the documented `/v1/systemone` API and `jev-latest`; local verification resolved to `jev-1.13.0`.
 
 ## Boundaries
 

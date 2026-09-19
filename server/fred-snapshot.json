@@ -1,0 +1,38 @@
+{
+  "retrievedAt": "2026-09-19T18:12:23.837Z",
+  "source": "FRED public CSV, retrieved by the local server",
+  "observations": [
+    {
+      "id": "DFF",
+      "label": "Fed funds rate",
+      "unit": "%",
+      "date": "2026-09-17",
+      "value": 3.88,
+      "url": "https://fred.stlouisfed.org/series/DFF"
+    },
+    {
+      "id": "DGS10",
+      "label": "10-year Treasury",
+      "unit": "%",
+      "date": "2026-09-17",
+      "value": 4.94,
+      "url": "https://fred.stlouisfed.org/series/DGS10"
+    },
+    {
+      "id": "T10YIE",
+      "label": "10-year inflation expectations",
+      "unit": "%",
+      "date": "2026-09-18",
+      "value": 2.33,
+      "url": "https://fred.stlouisfed.org/series/T10YIE"
+    },
+    {
+      "id": "CPIAUCSL",
+      "label": "Consumer price index",
+      "unit": "index",
+      "date": "2026-08-01",
+      "value": 334.131,
+      "url": "https://fred.stlouisfed.org/series/CPIAUCSL"
+    }
+  ]
+}
