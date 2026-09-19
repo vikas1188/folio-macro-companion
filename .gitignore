@@ -5,3 +5,13 @@
 node_modules/
 .DS_Store
 dist/
+.vercel/
+.vercel
+
+.playwright-cli/
+
+# Private presentation build intermediates and superseded exports
+.folio-deck-build/
+.chart-data-*/
+outputs/*
+!outputs/Folio-Website-Pitch.pptx

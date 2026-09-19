@@ -1,4 +1,10 @@
+import metalsSource from '../public/metals.js?raw';
+import mathSource from '../public/math.js?raw';
+import peopleSource from '../public/people.js?raw';
+import peopleViewSource from '../public/people-view.js?raw';
+import mindmapSource from '../public/mindmap.js?raw';
+import signalSource from '../public/signals.js?raw';
 import {handleAPI} from './api.js';
 import html from '../public/index.html?raw';import css from '../public/style.css?raw';import app from '../public/app.js?raw';import model from '../public/model.js?raw';import live from '../public/live.js?raw';
-const assets={'/':['text/html',html],'/index.html':['text/html',html],'/style.css':['text/css',css],'/app.js':['text/javascript',app],'/model.js':['text/javascript',model],'/live.js':['text/javascript',live]};
+const assets={'/metals.js':['text/javascript',metalsSource],'/math.js':['text/javascript',mathSource],'/people.js':['text/javascript',peopleSource],'/people-view.js':['text/javascript',peopleViewSource],'/mindmap.js':['text/javascript',mindmapSource],'/signals.js':['text/javascript',signalSource],'/':['text/html',html],'/index.html':['text/html',html],'/style.css':['text/css',css],'/app.js':['text/javascript',app],'/model.js':['text/javascript',model],'/live.js':['text/javascript',live]};
 export default {async fetch(request,env,ctx){const path=new URL(request.url).pathname;if(path.startsWith('/api/'))return handleAPI(request,env);const asset=assets[path];if(!asset)return new Response('Not found',{status:404});if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});return new Response(request.method==='HEAD'?null:asset[1],{headers:{'Content-Type':asset[0]+'; charset=utf-8','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','Cache-Control':'no-cache'}})}};

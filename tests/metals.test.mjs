@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {parseMetalBook} from '../server/metals.js';import {handleAPI} from '../server/api.js';
+const now=Date.now(),book={coin:'xyz:GOLD',time:now,levels:[[{px:'4375.7'}],[{px:'4375.8'}]]};
+test('metal quote uses the correct instrument and timestamped bid ask midpoint',()=>{const q=parseMetalBook(book,'xyz:GOLD',now);assert.equal(q.price,4375.75);assert.equal(q.unit,'USD per troy ounce reference');assert.equal(q.asOf,new Date(now).toISOString());});
+test('stale, future, mismatched, crossed, empty and nonnumeric books are withheld',()=>{for(const b of [{...book,time:now-61000},{...book,time:now+10000},{...book,coin:'xyz:SILVER'},{...book,levels:[[{px:'5'}],[{px:'4'}]]},{...book,levels:[[],[]]},{...book,levels:[[{px:'NaN'}],[{px:'4'}]]}])assert.throws(()=>parseMetalBook(b,'xyz:GOLD',now));});
+test('metal endpoint is read-only',async()=>{const r=await handleAPI(new Request('https://folio.example/api/metals',{method:'POST'}));assert.equal(r.status,405);});

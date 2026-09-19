@@ -1,0 +1,14 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {parseOil,buildEvents,selectEvidence} from '../server/signals.js';
+import {signals} from '../public/signals.js';
+import {signalIllustration} from '../public/model.js';
+import {handleAPI,validateDistribution} from '../server/api.js';
+const csv='"STUB_1","9/11/26","9/4/26"\n"Crude Oil","708.386","709.429"\n"Commercial (Excluding SPR)","423.429","424.069"';
+const html='Release Date: Sep. 16, 2026 Next Release Date: Sep. 23, 2026';
+test('oil excludes SPR, preserves million-barrel units and uses reported dates',()=>{const o=parseOil(csv,html,Date.parse('2026-09-19'));assert.equal(o.value,423.429);assert.ok(Math.abs(o.change+.640)<1e-9);assert.equal(o.nextDate,'2026-09-23');assert.equal(o.publishedAt,'2026-09-16T00:00:00.000Z');});
+test('oil withholds malformed, stale, and undated tables',()=>{assert.throws(()=>parseOil(csv,html,Date.parse('2026-10-15')));assert.throws(()=>parseOil(csv.replace('Commercial (Excluding SPR)','SPR'),html,Date.parse('2026-09-19')));assert.throws(()=>parseOil(csv,'',Date.parse('2026-09-19')));});
+test('CPI uses monthly percentage change, not index level; absent baselines stay absent',()=>{const date=new Date(Date.now()-20*86400000).toISOString().slice(0,10);const e=buildEvents({macro:[{id:'CPIAUCSL',date,value:334.131,previous:332.813},{id:'UNRATE',date,value:4.1}]});assert.equal(e.inflation.value,.4);assert.equal(e.jobs.value,4.1);assert.equal(e.oil,null);assert.equal(buildEvents({macro:[]}).inflation,null);});
+test('each signal has a distinct complete probability and impact contract',()=>{for(const [key,s] of Object.entries(signals)){const keys=Object.keys(s.labels);assert.deepEqual(Object.keys(s.criteria),keys);assert.deepEqual(Object.keys(s.returns),keys);const p=Object.fromEntries(keys.map((k,i)=>[k,i===0?1:0]));const result=signalIllustration(100000,[0,0,0,0,100,0],p,key);assert.equal(result.weighted,1000*s.returns[keys[0]][4]);assert.equal(signalIllustration(100000,[0,0,0,0,0,100],p,key).weighted,0);assert.throws(()=>signalIllustration(100000,[100,0,0,0,0,0],{cut:.2,hold:.3,hike:.5},key==='fed'?'oil':key));validateDistribution({probabilities:p},keys);}});
+test('routing candidates are signal specific and reject future or stale evidence',()=>{const now=Date.now(),n=(id,source,age)=>({id,source,publishedAt:new Date(now-age).toISOString()});const data={news:[n('a','oil',100),n('b','fed',100),n('c','energy',-100),n('d','energy',31*86400000)]};assert.deepEqual(selectEvidence(data,'oil',now).map(x=>x.id),['a']);assert.deepEqual(selectEvidence(data,'jobs',now).map(x=>x.id),['b']);});
+test('unknown signals fail before accessing any upstream model',async()=>{const r=await handleAPI(new Request('https://folio.test/api/analyze?signal=unknown',{method:'POST'}),{});assert.equal(r.status,400);});

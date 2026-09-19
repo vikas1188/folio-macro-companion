@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {postRows,canonicalURL,store} from '../server/store.js';
+import {chatterTasks,normalizePosts} from '../server/chatter.js';
+test('canonical links discard marketing tags and fragment, preserving meaningful parameters',()=>{assert.equal(canonicalURL('https://example.com/news?id=7&utm_source=x#top'),'https://example.com/news?id=7');});
+test('duplicate social IDs and feed URLs produce one stored row per item',()=>{const post={id:'x-12',source:'x',url:'https://x.com/i/web/status/12',publishedAt:'2026-09-18T00:00:00Z',title:'Fed'};assert.equal(postRows([post,{...post,title:'Fed update'}]).length,1);const feed={...post,source:'fed',url:'https://example.com/news'};assert.equal(postRows([feed,{...feed,id:'fed-9',url:feed.url+'?utm_source=rss'}]).length,1);});
+test('missing durable storage fails closed before network access',async()=>{await assert.rejects(store({},'reserve'),/not configured/);});
+test('X reads PostgreSQL instead of launching Apify when store is configured',async()=>{const original=globalThis.fetch;const calls=[];globalThis.fetch=async(url,options)=>{calls.push([url,JSON.parse(options.body)]);return Response.json([{id:'x-12',title:'Fed rates',excerpt:'Fed rates',url:'https://x.com/i/web/status/12',publishedAt:new Date().toISOString()}]);};try{const task=chatterTasks({FOLIO_STORE_URL:'https://store.example',FOLIO_STORE_KEY:'test'}).find(t=>t.name.startsWith('X'));const posts=await task.run();assert.equal(posts[0].id,'x-12');assert.equal(calls.length,1);assert.equal(calls[0][1].action,'posts');}finally{globalThis.fetch=original;}});
+
+test('Reddit RSS and OAuth identifiers resolve to the same database key',()=>{const p={title:'Fed',url:'https://www.reddit.com/r/investing/comments/abc/story/',publishedAt:new Date().toISOString()};const a=normalizePosts([{...p,id:'t3_abc'}],'reddit')[0],b=normalizePosts([{...p,id:'abc'}],'reddit')[0];assert.equal(a.id,b.id);assert.equal(postRows([a,b]).length,1);});
